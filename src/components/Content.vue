@@ -8,6 +8,24 @@ import { BButton, BModal } from 'bootstrap-vue-next'
 import Edit from './Edit.vue';
 import { RouterLink, RouterView } from 'vue-router'
 
+import DataTable from 'datatables.net-vue3'
+import DataTablesCore from 'datatables.net';
+import DataTableLib from 'datatables.net-bs5';
+import Buttons from 'datatables.net-bs5';
+import ButtonsHtml5 from 'datatables.net-buttons/js/buttons.html5';
+import print from 'datatables.net-buttons/js/buttons.print';
+import pdfmake from 'pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+
+import JsZip from 'jszip';
+
+window.JsZip = JsZip;
+
+DataTable.use(DataTableLib);
+DataTable.use(pdfmake);
+DataTable.use(ButtonsHtml5);
+
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
@@ -21,8 +39,36 @@ onMounted( () => {
 })
 
 const list_users = ref([])
+
 const show = ref(false)
 const load = ref(false)
+
+const columns = [
+  {
+    data:null,
+    render:function(data,type,row,meta){
+      return (meta.row + 1)
+    }
+  },
+  { data: 'name' },
+  { data: 'phone' },
+  { data: 'email' },
+  { data: 'rfc' },
+  {
+    data:null,
+    render:function(data,type,row,meta){
+      return "<button class='btn btn-warning text-white' @click=' deleteHomework(" + data.id + ")'>Update</button>"
+    }
+  },
+  {
+    data:null,
+    render:function(data,type,row,meta){
+      return '<button class="btn btn-danger text-white" @click=" deleteHomework(' + data.id + ')">Delete</button>'
+    }
+  },
+  
+];
+
 const gethomeworks =  async () => {
     axios.get('api/users').then( (response) => {
         console.log(response.data.data)
@@ -248,49 +294,19 @@ const showModal = () => {
                 <h4>List of Users</h4>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>
-                                    ID
-                                </th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Phone</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Created</th>
-                                <th>Options</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="item in list_users" :key="item.id">
-                                <td>
-                                    {{  item.id }}
-                                </td>
-                                <td>
-                                    {{  item.name }}
-                                </td>
-                                <td>
-                                    {{  item.phone }}
-                                </td>
-                                <td>
-                                    {{ item.email }}
-                                </td>
-                                <td>
-                                    {{ item.created_at }}
-                                </td>
-                                <td>
-                                    <BButton variant="warning" @click="show = !show">Edit</BButton>
-                                    <BModal v-model="show" hide-footer >
-                                        <Edit :id="item.id"/>
-                                    </BModal>
-                                    &nbsp;
-                                    <button class="btn btn-danger text-white" @click="$event => deleteHomework(item.id,item.name)">Delete</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+              <DataTable  :data="list_users" :columns="columns"  class="table table-hover" :options="{responsive:true, dom:'Bfrtip'}" >
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>RFC</th>
+                    <th>Update</th>
+                    <th>Delete</th>
+                  </tr>
+                </thead>
+              </DataTable>
             </div>
 
           </div>

@@ -20,11 +20,27 @@ export const useAuthStore = defineStore('auth',{
                 this.router.push('/home');
             })
             .catch( (errors) => {
-                let desc = ''
-                errors.response.data.errors.map( (e) =>{
-                    desc = desc + ' ' +e
+                
+                //console.log(errors.response.data.message)
+
+                const message_errors = [
+                    errors.response.data.message
+                ]
+                
+                let msj
+
+                message_errors.map( (e) => {
+                    if(e.email){
+                        msj = e.email[0]
+                    }
+                    if(e.password){
+                        msj = e.password[0]
+                    }
                 })
-                show_alert(desc,'error','')
+                
+                show_alert(msj,'error','')
+                
+                
             })
               
             
